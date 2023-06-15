@@ -74,7 +74,6 @@ app.use(async (ctx) => {
     await execute(
       `cd ${join(
         __dirname,
-        "..",
         "plugins"
       )} && unzip -o ${pluginName}.zip -d ${pluginDir}`
     );
