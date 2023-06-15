@@ -1,11 +1,16 @@
 import Koa from "koa";
+import serve from "koa-static";
+import Router from "@koa/router";
 import bodyParser from "koa-body";
 import { join, basename } from "path";
 
 import { createIfNotExists, getFile, listPlugins } from "./plugins";
 import { execute } from "./execute";
+import mount from "koa-mount";
 
 const app = new Koa();
+
+const router = new Router();
 
 app.use(
   bodyParser({
@@ -21,68 +26,64 @@ app.use(
   })
 );
 
-app.use(async (ctx) => {
-  const path = ctx.path;
-  const method = ctx.method;
-
+app.use(async (ctx, next) => {
   await createIfNotExists();
+  await next();
 
-  if (path === "/plugins") {
-    // List plugins
-    const plugins = await listPlugins();
-
-    ctx.body = plugins;
-  } else if (path.startsWith("/plugins")) {
-    // Serve plugins from directory
-    const path = ctx.path.replace("/plugins/", "");
-
-    try {
-      const file = await getFile(path);
-      ctx.body = file;
-    } catch (e) {
-      ctx.status = 404;
-      ctx.body = "Not found";
-    }
-  } else if (path === "/upload" && method === "POST") {
-    // Get the uploaded zip file, extract it, and move it to the plugins directory
-
-    const file = ctx.request.files?.file;
-
-    if (!file) {
-      ctx.status = 400;
-      ctx.body = "No file uploaded";
-      return;
-    }
-
-    if (file instanceof Array) {
-      ctx.status = 400;
-      ctx.body = "No file uploaded";
-      return;
-    }
-
-    if (!file.originalFilename?.endsWith(".zip")) {
-      ctx.status = 400;
-      ctx.body = "Only zip files are allowed";
-      return;
-    }
-
-    const pluginName = basename(file.originalFilename, ".zip");
-    const pluginsDir = join(__dirname, "plugins");
-    const pluginDir = join(pluginsDir, `${pluginName}`);
-
-    // Extract the zip file
-    await execute(
-      `cd ${join(
-        __dirname,
-        "plugins"
-      )} && unzip -o ${pluginName}.zip -d ${pluginDir}`
-    );
-
-    // Delete the zip file
-    await execute(`rm ${join(pluginsDir, `${pluginName}.zip`)}`);
-
-    ctx.body = "Uploaded";
-  }
+  ctx.set("Access-Control-Allow-Origin", "*");
 });
 
-app.listen(3000);
+app.use(mount("/plugins", serve(join(__dirname, "plugins"))));
+
+router.get("/plugins", async (ctx, next) => {
+  // List plugins
+  const plugins = await listPlugins();
+
+  ctx.body = plugins;
+});
+
+router.post("/upload", async (ctx, next) => {
+  // Get the uploaded zip file, extract it, and move it to the plugins directory
+
+  const file = ctx.request.files?.file;
+
+  if (!file) {
+    ctx.status = 400;
+    ctx.body = "No file uploaded";
+    return;
+  }
+
+  if (file instanceof Array) {
+    ctx.status = 400;
+    ctx.body = "No file uploaded";
+    return;
+  }
+
+  if (!file.originalFilename?.endsWith(".zip")) {
+    ctx.status = 400;
+    ctx.body = "Only zip files are allowed";
+    return;
+  }
+
+  const pluginName = basename(file.originalFilename, ".zip");
+  const pluginsDir = join(__dirname, "plugins");
+  const pluginDir = join(pluginsDir, `${pluginName}`);
+
+  // Extract the zip file
+  await execute(
+    `cd ${join(
+      __dirname,
+      "plugins"
+    )} && unzip -o ${pluginName}.zip -d ${pluginDir}`
+  );
+
+  // Delete the zip file
+  await execute(`rm ${join(pluginsDir, `${pluginName}.zip`)}`);
+
+  ctx.body = "Uploaded";
+});
+
+app.use(router.routes());
+app.use(router.allowedMethods());
+
+app.listen(3333);
