@@ -2,7 +2,7 @@ import Koa from "koa";
 import bodyParser from "koa-body";
 import { join, basename } from "path";
 
-import { getFile, listPlugins } from "./plugins";
+import { createIfNotExists, getFile, listPlugins } from "./plugins";
 import { execute } from "./execute";
 
 const app = new Koa();
@@ -10,7 +10,7 @@ const app = new Koa();
 app.use(
   bodyParser({
     formidable: {
-      uploadDir: join(__dirname, "..", "plugins"),
+      uploadDir: join(__dirname, "plugins"),
       keepExtensions: true,
       filename: (name, file) => {
         return `${name}.zip`;
@@ -24,6 +24,8 @@ app.use(
 app.use(async (ctx) => {
   const path = ctx.path;
   const method = ctx.method;
+
+  await createIfNotExists();
 
   if (path === "/plugins") {
     // List plugins
@@ -65,7 +67,7 @@ app.use(async (ctx) => {
     }
 
     const pluginName = basename(file.originalFilename, ".zip");
-    const pluginsDir = join(__dirname, "..", "plugins");
+    const pluginsDir = join(__dirname, "plugins");
     const pluginDir = join(pluginsDir, `${pluginName}`);
 
     // Extract the zip file

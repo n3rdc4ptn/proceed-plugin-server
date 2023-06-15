@@ -1,8 +1,9 @@
 import { readdir, stat, mkdir, readFile } from "fs/promises";
+import { join } from "path";
 
-const pluginsDirectory = "./plugins";
+const pluginsDirectory = join(__dirname, "./plugins");
 
-async function createIfNotExists() {
+export async function createIfNotExists() {
   try {
     await stat(pluginsDirectory);
   } catch (e) {
