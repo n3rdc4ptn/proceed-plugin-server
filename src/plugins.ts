@@ -13,7 +13,9 @@ async function createIfNotExists() {
 export async function listPlugins() {
   await createIfNotExists();
 
-  return await readdir(pluginsDirectory);
+  const plugins = await readdir(pluginsDirectory);
+
+  return plugins.filter((plugin) => !plugin.startsWith("."));
 }
 
 export async function getFile(path: string) {
