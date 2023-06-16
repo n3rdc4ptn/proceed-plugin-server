@@ -16,7 +16,7 @@ export async function listPlugins() {
 
   const plugins = await readdir(pluginsDirectory);
 
-  return plugins.filter((plugin) => !plugin.startsWith("."));
+  return plugins.filter((plugin) => !plugin.endsWith(".zip"));
 }
 
 export async function getFile(path: string) {
