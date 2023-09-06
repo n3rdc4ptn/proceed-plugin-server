@@ -80,7 +80,7 @@ router.post("/upload", async (ctx, next) => {
   // Delete the zip file
   await execute(`rm ${join(pluginsDir, `${pluginName}.zip`)}`);
 
-  ctx.body = "Uploaded";
+  ctx.body = `Uploaded ${pluginName}`;
 });
 
 app.use(router.routes());
