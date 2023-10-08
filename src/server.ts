@@ -45,7 +45,10 @@ router.get("/plugins", async (ctx, next) => {
 router.post("/upload", async (ctx, next) => {
   // Get the uploaded zip file, extract it, and move it to the plugins directory
 
-  const file = ctx.request.files?.file;
+  const file =
+    ctx.request.files instanceof Array
+      ? ctx.request.files[0]?.file
+      : ctx.request.files?.file;
 
   if (!file) {
     ctx.status = 400;
