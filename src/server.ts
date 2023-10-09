@@ -4,7 +4,12 @@ import Router from "@koa/router";
 import bodyParser from "koa-body";
 import { join, basename } from "path";
 
-import { createIfNotExists, getFile, listPlugins } from "./plugins";
+import {
+  createIfNotExists,
+  getFile,
+  installPlugin,
+  listPlugins,
+} from "./plugins";
 import { execute } from "./execute";
 import mount from "koa-mount";
 
@@ -68,22 +73,13 @@ router.post("/upload", async (ctx, next) => {
     return;
   }
 
+  console.log(file);
+
   const pluginName = basename(file.originalFilename, ".zip");
-  const pluginsDir = join(__dirname, "plugins");
-  const pluginDir = join(pluginsDir, `${pluginName}`);
 
-  // Extract the zip file
-  await execute(
-    `cd ${join(
-      __dirname,
-      "plugins"
-    )} && unzip -o ${pluginName}.zip -d ${pluginDir}`
-  );
+  await installPlugin(file.filepath);
 
-  // Delete the zip file
-  await execute(`rm ${join(pluginsDir, `${pluginName}.zip`)}`);
-
-  ctx.body = `Uploaded ${pluginName}`;
+  ctx.body = `Uploaded & Installed ${pluginName}`;
 });
 
 app.use(router.routes());
