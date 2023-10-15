@@ -44,6 +44,8 @@ router.get("/plugins", async (ctx, next) => {
   // List plugins
   const plugins = await listPlugins();
 
+  // Set the cache to 10 seconds to prevent the browser from spamming the server
+  ctx.set("Cache-Control", "max-age=10");
   ctx.body = plugins;
 });
 

@@ -38,6 +38,7 @@ export async function listPlugins() {
         bundle: manifest.bundle,
         description: manifest.description,
         version: manifest.version,
+        modules: manifest.modules,
       };
     });
 
