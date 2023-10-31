@@ -4,13 +4,7 @@ import Router from "@koa/router";
 import bodyParser from "koa-body";
 import { join, basename } from "path";
 
-import {
-  createIfNotExists,
-  getFile,
-  installPlugin,
-  listPlugins,
-} from "./plugins";
-import { execute } from "./execute";
+import { createIfNotExists, installPlugin, listPlugins } from "./plugins";
 import mount from "koa-mount";
 
 const app = new Koa();
@@ -74,8 +68,6 @@ router.post("/upload", async (ctx, next) => {
     ctx.body = "Only zip files are allowed";
     return;
   }
-
-  console.log(file);
 
   const pluginName = basename(file.originalFilename, ".zip");
 

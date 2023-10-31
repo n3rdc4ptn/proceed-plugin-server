@@ -2,7 +2,7 @@ import { readdir, stat, mkdir, readFile } from "fs/promises";
 import { join } from "path";
 import { execute } from "./execute";
 
-import YAML from "yaml";
+import { readManifest } from "proceed-plugin-core-library";
 
 const pluginsDirectory = join(__dirname, "./plugins");
 
@@ -29,7 +29,7 @@ export async function listPlugins() {
         throw new Error("No manifest file found");
       }
 
-      const manifest = YAML.parse(
+      const manifest = readManifest(
         await readFile(join(pluginPath, "manifest.yml"), "utf8")
       );
 
@@ -85,7 +85,7 @@ export async function installPlugin(uploadedFilePath: string) {
   // Delete the zip file
   await execute(`rm ${join(uploadedFilePath)}`);
 
-  const manifest = YAML.parse(
+  const manifest = readManifest(
     await readFile(join(tempPluginDirectory, "manifest.yml"), "utf8")
   );
 
