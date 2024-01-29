@@ -67,7 +67,6 @@ export async function installPlugin(uploadedFilePath: string) {
   }
 
   const tempPluginDirectory = join(pluginsDirectory, `tmp-${makeid(10)}`);
-  console.log(tempPluginDirectory);
 
   // Extract the zip file
   await execute(
